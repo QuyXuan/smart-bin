@@ -1,0 +1,4 @@
+Pillow
+flask
+tensorflow==2.3.0
+protobuf>=3.19.6
