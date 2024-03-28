@@ -1,4 +1,4 @@
-import hyper as hp
+# import hyper as hp
 from tensorflow.keras.applications import MobileNet, ResNet50
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
@@ -7,7 +7,7 @@ import json
 
 def _load_model():
     # model = ResNet50(weights='imagenet')
-    model = load_model('D:/Local Disk E_8142023115/Python/api/trained_model_v1.h5', compile=False)
+    model = load_model('./trained_model_v1.h5', compile=False)
     print("Load model complete!")
     return model
 		
