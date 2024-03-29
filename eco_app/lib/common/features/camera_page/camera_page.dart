@@ -1,109 +1,41 @@
+import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:eco_app/common/extensions/custom_theme_extension.dart';
-import 'package:eco_app/common/features/camera_page/pages/image_picker_page.dart';
+import 'package:eco_app/common/services/api_service.dart';
 import 'package:eco_app/common/utils/common_colors.dart';
+import 'package:eco_app/common/widgets/custom_alert_dialog.dart';
 import 'package:eco_app/common/widgets/custom_elevated_button.dart';
 import 'package:eco_app/common/widgets/custom_icon_button.dart';
 import 'package:eco_app/common/widgets/custom_text_style.dart';
 import 'package:eco_app/common/widgets/show_h_bar.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:image/image.dart' as img;
 
-class CameraPage extends StatefulWidget {
+class CameraPage extends ConsumerStatefulWidget {
   const CameraPage({super.key});
 
   @override
-  State<CameraPage> createState() => _CameraPageState();
+  ConsumerState<CameraPage> createState() => _CameraPageState();
 }
 
-class _CameraPageState extends State<CameraPage> {
+class _CameraPageState extends ConsumerState<CameraPage> {
   File? filePath;
   File? imageCamera;
-  Uint8List? imageGallery;
-  Interpreter? _interpreter;
-  static const outputSize = 8;
-  static const classNames = [
-    'cardboard',
-    'danger',
-    'facemask',
-    'glass',
-    'metal',
-    'nilon',
-    'paper',
-    'plastic'
-  ];
+  late ApiService apiService;
 
   @override
   void initState() {
     super.initState();
-    _tfliteInit();
+    apiService = ref.read(apiServiceProvider);
   }
 
   @override
   void dispose() {
-    _interpreter?.close();
     super.dispose();
-  }
-
-  Future<void> _tfliteInit() async {
-    try {
-      final interpreterOptions = InterpreterOptions()..threads = 1;
-      final interpreter = await Interpreter.fromAsset(
-          'assets/ai_models/tflite_garbage_model.tflite',
-          options: interpreterOptions);
-      interpreter.allocateTensors();
-      setState(() {
-        _interpreter = interpreter;
-      });
-    } catch (e) {
-      // log(e.toString());
-    }
-  }
-
-  Future<Float32List> imageToByteListFloat32(img.Image image, int width) async {
-    // var convertedBytes = Uint8List.fromList(img.encodeJpg(image));
-    var buffer = Float32List(width * width * 3);
-    int bufferIndex = 0;
-    for (int y = 0; y < width; y++) {
-      for (int x = 0; x < width; x++) {
-        img.Pixel pixel = image.getPixelSafe(x, y);
-        buffer[bufferIndex++] = pixel.r / 255.0; // Red
-        buffer[bufferIndex++] = pixel.g / 255.0; // Green
-        buffer[bufferIndex++] = pixel.b / 255.0; // Blue
-      }
-    }
-    return buffer;
-  }
-
-  Future<String> predictImage(Uint8List imageBytes) async {
-    const imgHeight = 160;
-    const imgWidth = 160;
-    if (_interpreter == null) {
-      await _tfliteInit();
-    }
-    img.Image image = img.decodeImage(imageBytes)!;
-    img.Image resizedImg =
-        img.copyResize(image, width: imgWidth, height: imgHeight);
-    Float32List input = await imageToByteListFloat32(resizedImg, imgWidth);
-    List output = List.filled(1 * outputSize, 0).reshape([1, outputSize]);
-    _interpreter?.run(input, output);
-    List<double> softMax = output[0]
-        .map((x) => exp(x) / output[0].reduce((a, b) => a + b))
-        .toList();
-    int index = softMax.indexOf(softMax.reduce(max));
-    String className = classNames[index];
-    _interpreter?.close();
-    return 'Garbage in image is $className';
-    // try {
-    // } catch (e) {
-    //   return 'Error occurred while predicting the image: $e';
-    // }
   }
 
   imagePickerIcon(
@@ -126,6 +58,19 @@ class _CameraPageState extends State<CameraPage> {
         ContentText(text),
       ],
     );
+  }
+
+  pickImageGallery() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+    var imageMap = File(image.path);
+    setState(() {
+      filePath = imageMap;
+    });
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   imagePickerTypeBottomSheet() {
@@ -163,18 +108,8 @@ class _CameraPageState extends State<CameraPage> {
                   ),
                   const SizedBox(width: 50),
                   imagePickerIcon(
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      final image = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ImagePickerPage(),
-                        ),
-                      );
-                      if (image == null) return;
-                      setState(() {
-                        imageGallery = image;
-                        imageCamera = null;
-                      });
+                    onTap: () {
+                      pickImageGallery();
                     },
                     icon: Icons.photo_camera_back_rounded,
                     text: "Gallery",
@@ -194,7 +129,6 @@ class _CameraPageState extends State<CameraPage> {
       final image = await ImagePicker().pickImage(source: ImageSource.camera);
       setState(() {
         imageCamera = File(image!.path);
-        imageGallery = null;
       });
     } catch (e) {
       // log(e.toString());
@@ -227,13 +161,13 @@ class _CameraPageState extends State<CameraPage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: imageGallery == null
+                    child: filePath == null
                         ? Image.asset(
                             'assets/images/upload.jpg',
                             fit: BoxFit.fill,
                           )
-                        : Image.memory(
-                            imageGallery!,
+                        : Image.file(
+                            filePath!,
                             fit: BoxFit.fill,
                           ),
                   ),
@@ -262,8 +196,99 @@ class _CameraPageState extends State<CameraPage> {
             const SizedBox(height: 50),
             CustomElevatedButton(
               onPressed: () {
-                predictImage(imageGallery!);
+                if (filePath == null) {
+                  AnimatedSnackBar.material(
+                    'Choose an image first!',
+                    type: AnimatedSnackBarType.warning,
+                    mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+                    duration: const Duration(seconds: 2),
+                    animationCurve: Curves.linearToEaseOut,
+                    snackBarStrategy: RemoveSnackBarStrategy(),
+                  ).show(context);
+                  return;
+                }
+                filePath!.readAsBytes().then((imageBytes) {
+                  String imageBase64 = base64Encode(imageBytes);
+                  apiService.dioPredictImage(imageBase64).then((response) {
+                    if (response['success'] != false) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return CustomAlertDialog(
+                            contentWidget: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  FontAwesomeIcons.check,
+                                  color: Color(0xFFf87168),
+                                  size: 50,
+                                ),
+                                const SizedBox(height: 10),
+                                RichText(
+                                  text: TextSpan(
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    ),
+                                    children: [
+                                      const TextSpan(
+                                        text: 'That image can be a ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: response['prediction'],
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                      const TextSpan(
+                                        text: ', with accuracy: ',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: response['accuracy'].toString(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                            hasCloseButton: true,
+                            hasOKButton: true,
+                            okButtonText: 'Save',
+                          );
+                        },
+                      );
+                    } else {
+                      AnimatedSnackBar.material(
+                        'Error',
+                        type: AnimatedSnackBarType.error,
+                        mobileSnackBarPosition: MobileSnackBarPosition.bottom,
+                        duration: const Duration(seconds: 2),
+                        animationCurve: Curves.linearToEaseOut,
+                        snackBarStrategy: RemoveSnackBarStrategy(),
+                      ).show(context);
+                    }
+                  });
+                });
               },
+              icon: const FaIcon(
+                FontAwesomeIcons.wandMagicSparkles,
+                color: Colors.white,
+              ),
               text: "Predict Image",
             )
           ],

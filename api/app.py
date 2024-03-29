@@ -53,7 +53,7 @@ def predict():
         data["success"] = True
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
-@app.route("/predict_img", methods=["POST"])
+@app.route("/predict-img", methods=["POST"])
 def predict_img():
     data = {"success": False}
     # Nhận dữ liệu hình ảnh mã hóa base64 từ request
