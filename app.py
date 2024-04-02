@@ -51,6 +51,7 @@ def predict():
         data["prediction"] = predicted_class
         data["accuracy"] = accuracy
         data["success"] = True
+        print("Predict Success")
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
 @app.route("/predict_img", methods=["POST"])
@@ -58,7 +59,6 @@ def predict_img():
     data = {"success": False}
     # Nhận dữ liệu hình ảnh mã hóa base64 từ request
     image_b64 = request.json.get("image")
-    print(image_b64)
     if image_b64:
         try:
             # Giải mã hình ảnh từ base64
@@ -77,6 +77,7 @@ def predict_img():
             data["prediction"] = predicted_class
             data["accuracy"] = accuracy
             data["success"] = True
+            print("Predict Success")
         except Exception as e:
             # Trả về một lỗi nếu có vấn đề trong quá trình xử lý hình ảnh
             data["error"] = str(e)
