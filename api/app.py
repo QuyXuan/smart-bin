@@ -32,19 +32,14 @@ def predict():
         image = image.resize((img_height, img_width))
         # Convert ảnh thành array
         img_arr = img_to_array(image)
-        print("Shape of img_arr:", img_arr.shape)  # In ra hình dạng của img_arr
         # Mở rộng kích thước của array
         img_bat = np.expand_dims(img_arr, axis=0)
-        print("Shape of img_bat:", img_bat.shape)  # In ra hình dạng của img_bat
         # Dự đoán phân phối xác suất
         predict = model.predict(img_bat)
-        print("predict[0]:", predict[0])  # In ra hình dạng của predict
         # Tính toán điểm số
         score = tf.nn.softmax(predict[0])
-        print("Shape of score:", score.shape)  # In ra hình dạng của score
         # Lấy lớp có điểm số cao nhất
         predicted_class = class_names[np.argmax(score)]
-        print("np.argmax(score):", np.argmax(score))  # In ra hình dạng của score
         # Lấy điểm số cao nhất
         accuracy = np.max(score) * 100
         # Gán kết quả vào data
