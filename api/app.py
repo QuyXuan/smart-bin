@@ -46,6 +46,7 @@ def predict():
         data["prediction"] = predicted_class
         data["accuracy"] = accuracy
         data["success"] = True
+        print("Predicted class: ", predicted_class)
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
 @app.route("/predict-img", methods=["POST"])
@@ -72,6 +73,7 @@ def predict_img():
             data["prediction"] = predicted_class
             data["accuracy"] = accuracy
             data["success"] = True
+            print("Predicted class: ", predicted_class)
         except Exception as e:
             # Trả về một lỗi nếu có vấn đề trong quá trình xử lý hình ảnh
             data["error"] = str(e)
