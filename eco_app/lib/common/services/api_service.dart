@@ -8,7 +8,7 @@ final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
 class ApiService {
   late Dio _dio;
-  static const String baseURL = 'https://smart-bin-suxu.onrender.com';
+  static const String baseURL = 'https://pbl-5-smart-bin.azurewebsites.net';
 
   ApiService() {
     _dio = Dio();
@@ -18,7 +18,7 @@ class ApiService {
   Future<Map<String, dynamic>> dioPredictImage(String imageBase64) async {
     try {
       final response = await _dio.post(
-        '$baseURL/predict-img',
+        '$baseURL/predict_img',
         data: {'image': imageBase64},
       );
       if (response.statusCode == 200) {

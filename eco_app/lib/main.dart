@@ -1,12 +1,14 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:eco_app/common/extensions/notification_controller.dart';
 import 'package:eco_app/common/features/home/home.dart';
+import 'package:eco_app/common/models/predict_item.dart';
 import 'package:eco_app/common/routes/routes.dart';
 import 'package:eco_app/common/services/notification_service.dart';
 import 'package:eco_app/common/themes/dark_theme.dart';
 import 'package:eco_app/common/themes/light_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +18,9 @@ Future<void> main() async {
     AwesomeNotifications().requestPermissionToSendNotifications();
   }
   await NotificationService.initializeNotification();
+  await Hive.initFlutter();
+  Hive.registerAdapter(PredictItemAdapter());
+  await Hive.openBox<PredictItem>("predictList");
   runApp(
     const ProviderScope(
       child: MyApp(),
