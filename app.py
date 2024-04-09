@@ -22,6 +22,7 @@ app = Flask(__name__)
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    print("Call predict")
     data = {"success": False}
     if request.files.get("image"):
         # Lấy file ảnh người dùng upload lên
@@ -51,6 +52,7 @@ def predict():
 
 @app.route("/predict_img", methods=["POST"])
 def predict_img():
+    print("Call predict_img")
     data = {"success": False}
     # Nhận dữ liệu hình ảnh mã hóa base64 từ request
     image_b64 = request.json.get("image")
