@@ -12,7 +12,7 @@ import base64
 
 img_height = 160
 img_width = 160
-class_names = ['cardboard', 'danger', 'facemask', 'glass', 'metal', 'nilon', 'paper', 'plastic']
+class_names = ['battery', 'batterypack', 'cardboard', 'dish', 'eggshell', 'facemask', 'glass', 'lighter', 'metal', 'milkbox', 'nylon', 'paper', 'plastic']
 # Khởi tạo model.
 global model 
 model = None
