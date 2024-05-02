@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
-# import hyper as hp
+
+from logger import log_critical, log_info, log_warning, log_error
 from flask import Flask, request
 import json
 import io
@@ -9,23 +10,44 @@ import imagenet
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import img_to_array
 import base64
+from firebase_utils import push_notification, upload_image
 
 img_height = 160
 img_width = 160
-class_names = ['cardboard', 'danger', 'facemask', 'glass', 'metal', 'nilon', 'paper', 'plastic']
+class_names = [
+    "battery",
+    "batterypack",
+    "cardboard",
+    "dish",
+    "eggshell",
+    "facemask",
+    "glass",
+    "lighter",
+    "metal",
+    "milkbox",
+    "nylon",
+    "paper",
+    "plastic",
+]
 # Khởi tạo model.
-global model 
+global model
 model = None
+# Token thiết bị
+global device_token
+device_token = None
 # Khởi tạo flask app
 app = Flask(__name__)
-# api = Api(app)
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    log_info("Predicting...")
     data = {"success": False}
     if request.files.get("image"):
         # Lấy file ảnh người dùng upload lên
         image = request.files["image"].read()
+        image_bytes = io.BytesIO(image).read()
+        upload_image(image_bytes)
         # Convert sang dạng array image
         image = Image.open(io.BytesIO(image))
         # resize ảnh
@@ -46,15 +68,19 @@ def predict():
         data["prediction"] = predicted_class
         data["accuracy"] = accuracy
         data["success"] = True
-        print("Predicted class: ", predicted_class)
+        log_info(f"Predicted class: {predicted_class}")
+        push_notification(
+            "Waste Classification", f"Predicted class: {predicted_class}", device_token
+        )
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
-@app.route("/predict-img", methods=["POST"])
+
+@app.route("/predict_img", methods=["POST"])
 def predict_img():
+    log_info("Predicting image...")
     data = {"success": False}
     # Nhận dữ liệu hình ảnh mã hóa base64 từ request
     image_b64 = request.json.get("image")
-    print(image_b64)
     if image_b64:
         try:
             # Giải mã hình ảnh từ base64
@@ -73,15 +99,29 @@ def predict_img():
             data["prediction"] = predicted_class
             data["accuracy"] = accuracy
             data["success"] = True
-            print("Predicted class: ", predicted_class)
+            log_info(f"Predicted class: {predicted_class}")
         except Exception as e:
             # Trả về một lỗi nếu có vấn đề trong quá trình xử lý hình ảnh
             data["error"] = str(e)
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
+
+@app.route("/register_device", methods=["POST"])
+def register_device():
+    log_info("Call register_device")
+    data = {"success": False}
+    token = request.json.get("token")
+    if token:
+        log_info(f"Register device with token: {token}")
+        global device_token
+        device_token = token
+        data["success"] = True
+    return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
+
+
 if __name__ == "__main__":
-	print("App run!")
-	# Load model
-	model = utils._load_model()
-	# IP = '127.0.0.1'
-	app.run(debug=True, host='0.0.0.0', port=5001)
+    log_info("Starting server...")
+    # Load model
+    model = utils._load_model()
+    # IP = '127.0.0.1'
+    app.run(host="0.0.0.0", port=8000)

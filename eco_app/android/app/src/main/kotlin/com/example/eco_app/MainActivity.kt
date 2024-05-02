@@ -1,4 +1,4 @@
-package com.example.eco_app
+package com.smart_bin.eco_app
 
 import io.flutter.embedding.android.FlutterActivity
 

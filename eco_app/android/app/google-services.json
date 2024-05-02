@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817844794730",
+    "project_id": "eco-app-da818",
+    "storage_bucket": "eco-app-da818.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817844794730:android:ab2530a4f7b578dffc2113",
+        "android_client_info": {
+          "package_name": "com.smart_bin.eco_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4KDr28SFWTC6jAAQKtYxE6f0NHf_x6Mo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
