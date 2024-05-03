@@ -5,24 +5,26 @@ from tensorflow.keras.models import load_model
 import numpy as np
 import json
 
+
 def _load_model():
     # model = ResNet50(weights='imagenet')
-    model = load_model('./aug_partial_stratify_after_T.h5')
+    model = load_model("./train_models/trained_model_v5_v2.h5")
     print("Load model complete!")
     return model
-		
+
 
 def _preprocess_image(img, shape):
-	img_rz = img.resize(shape)
-	img_rz = img_to_array(img_rz)
-	img_rz = np.expand_dims(img_rz, axis=0)
-	return img_rz
+    img_rz = img.resize(shape)
+    img_rz = img_to_array(img_rz)
+    img_rz = np.expand_dims(img_rz, axis=0)
+    return img_rz
 
 
 class NumpyEncoder(json.JSONEncoder):
-    '''
+    """
     Encoding numpy into json
-    '''
+    """
+
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
