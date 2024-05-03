@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:eco_app/common/services/dio_interceptor.dart';
@@ -8,7 +9,8 @@ final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
 class ApiService {
   late Dio _dio;
-  static const String baseURL = 'https://pbl-5-smart-bin.azurewebsites.net';
+  // static const String baseURL = 'https://pbl-5-smart-bin.azurewebsites.net';
+  static const String baseURL = 'http://192.168.1.6:8000';
 
   ApiService() {
     _dio = Dio();
@@ -31,6 +33,17 @@ class ApiService {
       }
     } catch (e) {
       return {'error': e.toString()};
+    }
+  }
+
+  Future<void> dioRegisterDeviceToken(String deviceToken) async {
+    try {
+      await _dio.post(
+        '$baseURL/register_device',
+        data: {'token': deviceToken},
+      );
+    } catch (e) {
+      log(e.toString());
     }
   }
 }

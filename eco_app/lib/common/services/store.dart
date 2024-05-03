@@ -9,6 +9,7 @@ class Store {
   static const String _isDarkMode = "IS_DARK_MODE";
   static const String _userAvatar = "USER_AVATAR";
   static const String _guestUserId = "GUEST_USER_ID";
+  static const String _deviceToken = "DEVICE_TOKEN";
 
   static Future<void> clear() async {
     final preferences = await SharedPreferences.getInstance();
@@ -72,5 +73,15 @@ class Store {
   static Future<String?> getGuestUserId() async {
     final preferences = await SharedPreferences.getInstance();
     return preferences.getString(_guestUserId);
+  }
+
+  static Future<void> setDeviceToken(String deviceToken) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_deviceToken, deviceToken);
+  }
+
+  static Future<String?> getDeviceToken() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getString(_deviceToken);
   }
 }

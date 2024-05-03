@@ -69,7 +69,7 @@ class CustomFlatButton extends StatelessWidget {
                   child: SizedBox(
                     height: 2,
                     width: (MediaQuery.of(context).size.width - 20) * 0.95,
-                    child: DecoratedBox(
+                    child: const DecoratedBox(
                       decoration: BoxDecoration(
                           // color: context.theme.greyColor,
                           ),
