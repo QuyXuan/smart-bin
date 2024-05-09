@@ -17,7 +17,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseApi().initNotification();
+  await FirebaseApi().initFunctions();
   await Hive.initFlutter();
   Hive.registerAdapter(PredictItemAdapter());
   await Hive.openBox<PredictItem>("predictList");
