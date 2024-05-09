@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:animated_snack_bar/animated_snack_bar.dart';
+import 'package:eco_app/common/api/firebase_api.dart';
 import 'package:eco_app/common/extensions/custom_theme_extension.dart';
 import 'package:eco_app/common/helpers/show_loading_dialog.dart';
+import 'package:eco_app/common/models/bin_item.dart';
 import 'package:eco_app/common/models/predict_item.dart';
 import 'package:eco_app/common/services/api_service.dart';
 import 'package:eco_app/common/services/predict_service.dart';
@@ -14,6 +17,7 @@ import 'package:eco_app/common/widgets/custom_text_style.dart';
 import 'package:eco_app/common/widgets/show_h_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mjpeg/flutter_mjpeg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -29,23 +33,61 @@ class ScannerAndMonitorPage extends ConsumerStatefulWidget {
 }
 
 class _ScannerAndMonitorPageState extends ConsumerState<ScannerAndMonitorPage> {
+  static const streamURL = "http://192.168.1.6:81/stream";
   File? filePath;
   File? imageCamera;
   late ApiService apiService;
   final PredictService _predictService = PredictService();
-  final dropdownItems = [
-    'Glass compartment',
-    'Recycle compartment',
-    'Danger compartment',
-    'Organic and other compartment',
+  bool isLive = false;
+  late List<BinItem> binItems = [
+    BinItem(
+      id: 'glass',
+      name: 'Glass',
+      servoName: 'servo1',
+      state: false,
+      imageDir: 'glass',
+      color: CommonColors.glassColor,
+    ),
+    BinItem(
+      id: 'recycle',
+      name: 'Recycle',
+      servoName: 'servo2',
+      state: false,
+      imageDir: 'recycle',
+      color: CommonColors.recycleColor,
+    ),
+    BinItem(
+      id: 'danger',
+      name: 'Danger',
+      servoName: 'servo3',
+      state: false,
+      imageDir: 'danger',
+      color: CommonColors.dangerColor,
+    ),
+    BinItem(
+      id: 'organic',
+      name: 'Organic',
+      servoName: 'servo4',
+      state: false,
+      imageDir: 'organic',
+      color: CommonColors.organicColor,
+    ),
   ];
-  String? dropdownSelectedValue = "Glass compartment";
-  bool isOpenCompartment = false;
 
   @override
   void initState() {
     super.initState();
     apiService = ref.read(apiServiceProvider);
+    FirebaseApi().getServos().then((servos) {
+      Map<String, bool> servoStates = {
+        for (var servo in servos) servo.name: servo.state == 1
+      };
+      setState(() {
+        for (var binItem in binItems) {
+          binItem.state = servoStates[binItem.servoName] ?? false;
+        }
+      });
+    });
   }
 
   @override
@@ -377,114 +419,155 @@ class _ScannerAndMonitorPageState extends ConsumerState<ScannerAndMonitorPage> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const HeadlineText("Camera view"),
-                        const SizedBox(height: 10),
-                        Container(
-                          height: screenSize.height * 0.4,
-                          width: screenSize.width,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: const Color(0xFFF2F2F2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 1,
-                                offset: const Offset(0, 3),
-                                blurRadius: 3,
-                              ),
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 1,
-                                offset: const Offset(0, -3),
-                                blurRadius: 3,
-                              ),
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 1,
-                                offset: const Offset(-3, 0),
-                                blurRadius: 3,
-                              ),
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 1,
-                                offset: const Offset(3, 0),
-                                blurRadius: 3,
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              FontAwesomeIcons.videoSlash,
-                              size: 50,
-                              color: CommonColors.darkGreen,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const HeadlineText("Monitoring"),
-                        const SizedBox(height: 10),
-                        DropdownButtonFormField(
-                          value: dropdownSelectedValue,
-                          items: dropdownItems
-                              .map((e) => DropdownMenuItem(
-                                  value: e, child: ContentText(e)))
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              dropdownSelectedValue = val;
-                            });
-                          },
-                          icon: const FaIcon(
-                            FontAwesomeIcons.chevronDown,
-                            color: CommonColors.darkGreen,
-                          ),
-                          dropdownColor: CommonColors.backgroundLight,
-                          decoration: const InputDecoration(
-                            labelText: "Select compartment",
-                            prefixIcon: Icon(
-                              FontAwesomeIcons.box,
-                              color: CommonColors.darkGreen,
-                            ),
-                            border: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: CommonColors.darkGreen,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Align(
-                          child: Container(
-                            height: screenSize.height * 0.1,
-                            width: screenSize.width * 0.3,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isLive = !isLive;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const HeadlineText("Camera view"),
+                          const SizedBox(height: 10),
+                          Container(
+                            height: screenSize.height * 0.4,
+                            width: screenSize.width,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               color: const Color(0xFFF2F2F2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, 3),
+                                  blurRadius: 3,
+                                ),
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, -3),
+                                  blurRadius: 3,
+                                ),
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 1,
+                                  offset: const Offset(-3, 0),
+                                  blurRadius: 3,
+                                ),
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 1,
+                                  offset: const Offset(3, 0),
+                                  blurRadius: 3,
+                                ),
+                              ],
                             ),
                             child: Center(
-                              child: Switch(
-                                activeColor: CommonColors.darkGreen,
-                                value: isOpenCompartment,
-                                onChanged: (value) {
-                                  setState(() {
-                                    isOpenCompartment = value;
-                                  });
-                                },
-                              ),
+                              child: isLive
+                                  ? Center(
+                                      child: Mjpeg(
+                                        isLive: true,
+                                        stream: streamURL,
+                                        timeout: const Duration(minutes: 5),
+                                        error: (context, error, stack) {
+                                          log(error.toString());
+                                          return Text(
+                                            error.toString(),
+                                            style: const TextStyle(
+                                                color: Colors.red),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : const Icon(
+                                      FontAwesomeIcons.videoSlash,
+                                      size: 50,
+                                      color: CommonColors.darkGreen,
+                                    ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          const HeadlineText("Monitoring"),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              for (var binItem in binItems)
+                                monitorCard(binItem),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             )
+          ],
+        ),
+      ),
+    );
+  }
+
+  GestureDetector monitorCard(BinItem binItem) {
+    Size screenSize = MediaQuery.of(context).size;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          binItem.state = !binItem.state;
+          FirebaseApi().updateServo(binItem.servoName, binItem.state ? 1 : 0);
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 6,
+          vertical: 10,
+        ),
+        child: Column(
+          children: [
+            Container(
+              height: screenSize.height * 0.1,
+              width: screenSize.width * 0.2,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: binItem.state ? binItem.color : const Color(0xFFF2F2F2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 1,
+                    offset: const Offset(0, 3),
+                    blurRadius: 3,
+                  ),
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 1,
+                    offset: const Offset(0, -3),
+                    blurRadius: 3,
+                  ),
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 1,
+                    offset: const Offset(-3, 0),
+                    blurRadius: 3,
+                  ),
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 1,
+                    offset: const Offset(3, 0),
+                    blurRadius: 3,
+                  ),
+                ],
+              ),
+              child: Image.asset(
+                'assets/images/${binItem.state ? '${binItem.imageDir}-white' : binItem.imageDir}.png',
+                fit: BoxFit.none,
+              ),
+            ),
+            const SizedBox(height: 5),
+            ContentText(binItem.name)
           ],
         ),
       ),

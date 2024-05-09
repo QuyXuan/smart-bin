@@ -52,6 +52,9 @@ dependencies:
   hive: ^2.2.3
   firebase_core: ^2.30.1
   firebase_messaging: ^14.9.1
+  firebase_database: ^10.5.4
+  firebase_auth: ^4.19.4
+  flutter_mjpeg: ^2.0.4
 
 dev_dependencies:
   flutter_test:

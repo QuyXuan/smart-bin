@@ -273,6 +273,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+1"
+  firebase_auth:
+    dependency: "direct main"
+    description:
+      name: firebase_auth
+      sha256: "63b4401c95ddb00fb272872c451147e33509e80eed43937369910ef6c34c00b7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.19.4"
+  firebase_auth_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_auth_platform_interface
+      sha256: "4e204f9ef43d83ac9e7a324a9317e4dd2a1ddda2aa72b67bc6cc364f0b8492dc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.2.5"
+  firebase_auth_web:
+    dependency: transitive
+    description:
+      name: firebase_auth_web
+      sha256: "809a2eb444d1a07c0a680b205b86d713bc7171a4b2627fd6c01cf05f2b6f93cd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.11.4"
   firebase_core:
     dependency: "direct main"
     description:
@@ -297,6 +321,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.16.0"
+  firebase_database:
+    dependency: "direct main"
+    description:
+      name: firebase_database
+      sha256: "4dca169ff762a5697f0008b1ad3fc2c3c0099d935cb6a5a9d2bb93cbb64f9efe"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.5.4"
+  firebase_database_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_database_platform_interface
+      sha256: fca6702b65a337f0bf4e497fb1621cfb480825940f75a1cf1bc34802ab0a2a89
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.5+32"
+  firebase_database_web:
+    dependency: transitive
+    description:
+      name: firebase_database_web
+      sha256: "587caa3d12ea197f91e05470c074a5d12203cdecd8431dd1b711effee072f6f7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.5+4"
   firebase_messaging:
     dependency: "direct main"
     description:
@@ -334,6 +382,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_hooks:
+    dependency: transitive
+    description:
+      name: flutter_hooks
+      sha256: cde36b12f7188c85286fba9b38cc5a902e7279f36dd676967106c041dc9dde70
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.5"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -342,6 +398,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  flutter_mjpeg:
+    dependency: "direct main"
+    description:
+      name: flutter_mjpeg
+      sha256: "46ea3f1a49838deb8e2b01a70b897313c7f985affecfaf3b3bae6f4e15405b6b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.4"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -436,10 +500,10 @@ packages:
     dependency: transitive
     description:
       name: http
-      sha256: "761a297c042deedc1ffbb156d6e2af13886bb305c2a343a4d972504cd67dd938"
+      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "0.13.6"
   http_multi_server:
     dependency: transitive
     description:
@@ -957,6 +1021,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  visibility_detector:
+    dependency: transitive
+    description:
+      name: visibility_detector
+      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
   vm_service:
     dependency: transitive
     description:
