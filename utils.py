@@ -8,7 +8,7 @@ import json
 
 def _load_model():
     # model = ResNet50(weights='imagenet')
-    model = load_model("./trained_model_v5_v2.h5")
+    model = load_model("./aug_partial_stratify_after_T.h5")
     print("Load model complete!")
     return model
 
