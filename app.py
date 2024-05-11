@@ -119,11 +119,6 @@ def predict_img():
             data["confident"] = confident
             data["success"] = True
             log_info(f"Predicted class: {predicted_class}")
-            push_notification(
-                "Waste Classification",
-                f"Predicted class: {predicted_class}",
-                device_token,
-            )
         except Exception as e:
             # Trả về một lỗi nếu có vấn đề trong quá trình xử lý hình ảnh
             data["error"] = str(e)
