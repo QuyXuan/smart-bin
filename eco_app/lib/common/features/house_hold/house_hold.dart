@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:eco_app/common/api/firebase_api.dart';
 import 'package:eco_app/common/extensions/custom_theme_extension.dart';
+import 'package:eco_app/common/helpers/notification_helper.dart';
 import 'package:eco_app/common/models/bin_item.dart';
 import 'package:eco_app/common/utils/common_colors.dart';
 import 'package:eco_app/common/widgets/custom_text_style.dart';
@@ -179,6 +180,14 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
         setState(() {
           binItem.state = !binItem.state;
           FirebaseApi().updateServo(binItem.servoName, binItem.state ? 1 : 0);
+          NotificationHelper.pushNotification(
+            title: binItem.state
+                ? "OPENED YOUR COMPARTMENT!!!"
+                : "CLOSED YOUR COMPARTMENT!!!",
+            body:
+                "Your ${binItem.name} compartment is ${binItem.state ? "closed" : "opened"}",
+            isToggleServo: true,
+          );
         });
       },
       child: Padding(
