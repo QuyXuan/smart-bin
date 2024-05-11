@@ -6,11 +6,10 @@ from flask import Flask, request
 import json
 import io
 import utils
-import imagenet
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import img_to_array
 import base64
-from firebase_utils import push_notification, upload_image
+from firebase_utils import push_notification, upload_image, set_state_on_esp32
 
 img_height = 160
 img_width = 160
@@ -29,6 +28,23 @@ class_names = [
     "paper",
     "plastic",
 ]
+
+compartment_categories = {
+    "battery": "danger",
+    "batterypack": "danger",
+    "lighter": "danger",
+    "facemask": "danger",
+    "milkbox": "recyclable",
+    "metal": "recyclable",
+    "paper": "recyclable",
+    "cardboard": "recyclable",
+    "plastic": "recyclable",
+    "glass": "glass",
+    "eggshell": "organic",
+    "dish": "organic",
+    "nylon": "organic",
+}
+
 # Khởi tạo model.
 global model
 model = None
@@ -63,12 +79,14 @@ def predict():
         # Lấy lớp có điểm số cao nhất
         predicted_class = class_names[np.argmax(score)]
         # Lấy điểm số cao nhất
-        accuracy = np.max(score) * 100
+        confident = np.max(score) * 100
         # Gán kết quả vào data
         data["prediction"] = predicted_class
-        data["accuracy"] = accuracy
+        data["compartment_name"] = compartment_categories[predicted_class]
+        data["confident"] = confident
         data["success"] = True
         log_info(f"Predicted class: {predicted_class}")
+        set_state_on_esp32(compartment_categories[predicted_class])
         push_notification(
             "Waste Classification", f"Predicted class: {predicted_class}", device_token
         )
@@ -94,10 +112,11 @@ def predict_img():
             predict = model.predict(img_bat)
             score = tf.nn.softmax(predict[0])
             predicted_class = class_names[np.argmax(score)]
-            accuracy = np.max(score) * 100
+            confident = np.max(score) * 100
             # Gán kết quả vào data
             data["prediction"] = predicted_class
-            data["accuracy"] = accuracy
+            data["compartment_name"] = compartment_categories[predicted_class]
+            data["confident"] = confident
             data["success"] = True
             log_info(f"Predicted class: {predicted_class}")
         except Exception as e:

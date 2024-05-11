@@ -51,3 +51,7 @@ def get_signed_url(image_path):
     blob = bucket.blob(image_path)
     signed_url = blob.generate_signed_url(expiration=datetime.datetime(2100, 1, 1))
     return signed_url
+
+
+def set_state_on_esp32(compartment_name):
+    ref.update({"esp32/state": 1, "esp32/compartment_name": compartment_name})

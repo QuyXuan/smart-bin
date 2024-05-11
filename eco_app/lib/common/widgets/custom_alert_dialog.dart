@@ -57,7 +57,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                     },
                 child: Container(
                   width: (MediaQuery.of(context).size.width * 0.8 - 40) / 2,
-                  height: 40,
+                  height: 50,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
@@ -80,7 +80,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
             ? GestureDetector(
                 onTap: widget.onOKButtonPressed ?? () {},
                 child: Container(
-                  height: 40,
+                  height: 50,
                   width: (MediaQuery.of(context).size.width * 0.8 - 20) / 2,
                   decoration: BoxDecoration(
                     color: CommonColors.greenDark,

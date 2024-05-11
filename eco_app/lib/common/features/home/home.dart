@@ -1,5 +1,6 @@
 import 'package:eco_app/common/extensions/custom_theme_extension.dart';
-import 'package:eco_app/common/features/scanner_and_monitor/scanner_and_monitor.dart';
+import 'package:eco_app/common/features/house_hold/house_hold.dart';
+import 'package:eco_app/common/features/scanner/scanner.dart';
 import 'package:eco_app/common/utils/common_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,10 +25,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   static const List<Widget> widgetOptions = <Widget>[
     SizedBox(),
-    ScannerAndMonitorPage(),
-    Center(
-      child: Text("Household Page"),
-    ),
+    ScannerPage(),
+    HouseHoldPage(),
   ];
   int selectedIndex = 0;
 
@@ -89,9 +88,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                     GButton(
                       icon: selectedIndex == 1
-                          ? FontAwesomeIcons.calendarWeek
-                          : FontAwesomeIcons.calendar,
-                      text: 'S&M',
+                          ? FontAwesomeIcons.cameraRotate
+                          : FontAwesomeIcons.camera,
+                      text: 'Scanner',
                     ),
                     GButton(
                       icon: selectedIndex == 2

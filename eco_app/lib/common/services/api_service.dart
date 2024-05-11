@@ -9,8 +9,7 @@ final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
 class ApiService {
   late Dio _dio;
-  // static const String baseURL = 'https://pbl-5-smart-bin.azurewebsites.net';
-  static const String baseURL = 'http://192.168.1.6:8000';
+  static const String baseURL = 'https://pbl-5-smart-bin.azurewebsites.net';
 
   ApiService() {
     _dio = Dio();
