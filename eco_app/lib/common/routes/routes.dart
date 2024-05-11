@@ -1,35 +1,15 @@
+import 'package:eco_app/common/features/home/home.dart';
 import 'package:flutter/material.dart';
 
 class Routes {
-  static const String welcome = "welcome";
-  static const String login = "login";
-  static const String signUp = "sign-up";
   static const String home = "home";
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case welcome:
+      case home:
         return MaterialPageRoute(
-          builder: (context) => const Scaffold(),
+          builder: (context) => const HomePage(),
         );
-
-      // case login:
-      //   return MaterialPageRoute(
-      //     builder: (context) => const LoginPage(),
-      //   );
-
-      // case signUp:
-      //   return MaterialPageRoute(
-      //     builder: (context) => const SignUpPage(),
-      //   );
-
-      // case home:
-      //   final Map args = settings.arguments as Map;
-      //   return MaterialPageRoute(
-      //     builder: (context) => HomePage(
-      //       todoItemId: args["todoItemId"],
-      //     ),
-      //   );
 
       default:
         return MaterialPageRoute(
