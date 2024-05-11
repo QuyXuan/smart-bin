@@ -29,6 +29,23 @@ class_names = [
     "paper",
     "plastic",
 ]
+
+compartmentCategories = {
+    "battery": "danger",
+    "batterypack": "danger",
+    "lighter": "danger",
+    "facemask": "danger",
+    "milkbox": "recyclable",
+    "metal": "recyclable",
+    "paper": "recyclable",
+    "cardboard": "recyclable",
+    "plastic": "recyclable",
+    "glass": "glass",
+    "eggshell": "organic",
+    "dish": "organic",
+    "nylon": "organic",
+}
+
 # Khởi tạo model.
 global model
 model = None
@@ -63,10 +80,11 @@ def predict():
         # Lấy lớp có điểm số cao nhất
         predicted_class = class_names[np.argmax(score)]
         # Lấy điểm số cao nhất
-        accuracy = np.max(score) * 100
+        confident = np.max(score) * 100
         # Gán kết quả vào data
         data["prediction"] = predicted_class
-        data["accuracy"] = accuracy
+        data["compartmentName"] = compartmentCategories[predicted_class]
+        data["confident"] = confident
         data["success"] = True
         log_info(f"Predicted class: {predicted_class}")
         push_notification(
@@ -94,10 +112,11 @@ def predict_img():
             predict = model.predict(img_bat)
             score = tf.nn.softmax(predict[0])
             predicted_class = class_names[np.argmax(score)]
-            accuracy = np.max(score) * 100
+            confident = np.max(score) * 100
             # Gán kết quả vào data
             data["prediction"] = predicted_class
-            data["accuracy"] = accuracy
+            data["compartmentName"] = compartmentCategories[predicted_class]
+            data["confident"] = confident
             data["success"] = True
             log_info(f"Predicted class: {predicted_class}")
         except Exception as e:
