@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:eco_app/common/helpers/notification_helper.dart';
 import 'package:eco_app/common/models/servo.dart';
 import 'package:eco_app/common/routes/routes.dart';
 import 'package:eco_app/common/services/store.dart';
@@ -44,6 +45,12 @@ class FirebaseApi {
 
   Future initPushNotification() async {
     FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      NotificationHelper.pushNotification(
+        title: message.notification!.title ?? "Smart Bin",
+        body: message.notification!.body ?? "Eco App",
+      );
+    });
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
   }
 

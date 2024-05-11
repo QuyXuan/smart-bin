@@ -1,5 +1,6 @@
 import 'package:eco_app/common/api/firebase_api.dart';
 import 'package:eco_app/common/features/home/home.dart';
+import 'package:eco_app/common/helpers/notification_helper.dart';
 import 'package:eco_app/common/models/predict_item.dart';
 import 'package:eco_app/common/routes/routes.dart';
 import 'package:eco_app/common/services/api_service.dart';
@@ -16,6 +17,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  NotificationHelper.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseApi().initFunctions();
   await Hive.initFlutter();
