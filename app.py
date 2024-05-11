@@ -6,11 +6,10 @@ from flask import Flask, request
 import json
 import io
 import utils
-import imagenet
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import img_to_array
 import base64
-from firebase_utils import push_notification, upload_image
+from firebase_utils import push_notification, upload_image, set_state_on_esp32
 
 img_height = 160
 img_width = 160
@@ -30,7 +29,7 @@ class_names = [
     "plastic",
 ]
 
-compartmentCategories = {
+compartment_categories = {
     "battery": "danger",
     "batterypack": "danger",
     "lighter": "danger",
@@ -83,10 +82,11 @@ def predict():
         confident = np.max(score) * 100
         # Gán kết quả vào data
         data["prediction"] = predicted_class
-        data["compartmentName"] = compartmentCategories[predicted_class]
+        data["compartment_name"] = compartment_categories[predicted_class]
         data["confident"] = confident
         data["success"] = True
         log_info(f"Predicted class: {predicted_class}")
+        set_state_on_esp32(compartment_categories[predicted_class])
         push_notification(
             "Waste Classification", f"Predicted class: {predicted_class}", device_token
         )
@@ -115,10 +115,15 @@ def predict_img():
             confident = np.max(score) * 100
             # Gán kết quả vào data
             data["prediction"] = predicted_class
-            data["compartmentName"] = compartmentCategories[predicted_class]
+            data["compartment_name"] = compartment_categories[predicted_class]
             data["confident"] = confident
             data["success"] = True
             log_info(f"Predicted class: {predicted_class}")
+            push_notification(
+                "Waste Classification",
+                f"Predicted class: {predicted_class}",
+                device_token,
+            )
         except Exception as e:
             # Trả về một lỗi nếu có vấn đề trong quá trình xử lý hình ảnh
             data["error"] = str(e)
