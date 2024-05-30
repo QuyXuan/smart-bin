@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:eco_app/common/constants.dart';
 import 'package:eco_app/common/services/dio_interceptor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,6 +41,16 @@ class ApiService {
       await _dio.post(
         '$baseURL/register_device',
         data: {'token': deviceToken},
+      );
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  Future<void> dioSetFlash(bool flashState) async {
+    try {
+      await _dio.get(
+        '${Constants.localUrl}/control?var=led_intensity&val=${flashState ? 100 : 0}',
       );
     } catch (e) {
       log(e.toString());
