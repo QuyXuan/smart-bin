@@ -17,7 +17,6 @@ class_names = [
     "battery",
     "batterypack",
     "cardboard",
-    "dish",
     "eggshell",
     "facemask",
     "glass",
@@ -47,7 +46,7 @@ compartment_categories = {
 
 # Khởi tạo model.
 global model
-model = None
+model = utils.load_model_predict()
 # Token thiết bị
 global device_token
 device_token = None
@@ -92,6 +91,36 @@ def predict():
             f"Predicted class: {predicted_class}!",
             device_token,
         )
+    return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
+
+
+@app.route("/test", methods=["POST"])
+def test():
+    log_info("Predicting...")
+    data = {"success": False}
+    if request.files.get("image"):
+        image = request.files["image"].read()
+        image_bytes = io.BytesIO(image).read()
+        upload_image(image_bytes)
+        image = Image.open(io.BytesIO(image))
+        image = image.resize((img_height, img_width))
+        img_array = tf.keras.utils.img_to_array(image)
+        img_array = img_array / 255.0
+        img_batch = np.expand_dims(img_array, axis=0)
+        predictions = model.predict(img_batch)
+        score = tf.nn.softmax(predictions[0])
+        data["test"] = (
+            "Garbage in image is {} with a {:.2f} percent confidence.".format(
+                class_names[np.argmax(score)], 100 * np.max(score)
+            )
+        )
+        # log_info(f"Predicted class: {predicted_class}")
+        # set_state_on_esp32(compartment_categories[predicted_class])
+        # push_notification(
+        #     "GARBAGE CLASSIFICATION!!!",
+        #     f"Predicted class: {predicted_class}!",
+        #     device_token,
+        # )
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
 
@@ -159,7 +188,5 @@ def notify_full_garbage():
 
 if __name__ == "__main__":
     log_info("Starting server...")
-    # Load model
-    model = utils._load_model()
     # IP = '127.0.0.1'
     app.run(host="0.0.0.0", port=8000)
