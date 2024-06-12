@@ -7,7 +7,8 @@ class Servo {
     required this.state,
   });
 
-  factory Servo.fromMap(String name, dynamic value) {
-    return Servo(name: name, state: value ?? 0);
+  factory Servo.fromMap(String name, Map<String, dynamic> value) {
+    final int state = value['state'] ?? 0;
+    return Servo(name: name, state: state);
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:eco_app/common/helpers/notification_helper.dart';
 import 'package:eco_app/common/models/servo.dart';
 import 'package:eco_app/common/routes/routes.dart';
@@ -13,10 +14,18 @@ class FirebaseApi {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firebaseMessaging = FirebaseMessaging.instance;
   final _firebaseDatabase = FirebaseDatabase.instance;
+  Map<String, String> servos = {
+    'servo1': 'glass',
+    'servo2': 'recyclable',
+    'servo3': 'danger',
+    'servo4': 'organic',
+  };
+  final player = AudioPlayer();
 
   Future<void> initFunctions() async {
     await authenticateUser();
     await initNotification();
+    listenFullGarbage();
   }
 
   Future<void> initNotification() async {
@@ -41,6 +50,23 @@ class FirebaseApi {
       return;
     }
     navigatorKey.currentState!.pushNamed(Routes.home);
+  }
+
+  void listenFullGarbage() {
+    servos.forEach((key, value) {
+      _firebaseDatabase
+          .ref("servos/$key/is_full")
+          .onValue
+          .listen((event) async {
+        final snapshot = event.snapshot;
+        final int? isFull = snapshot.value as int?;
+        if (isFull == 1) {
+          log("$key-$value");
+          await player.setSource(AssetSource("audios/$value.mp3"));
+          await player.resume();
+        }
+      });
+    });
   }
 
   Future initPushNotification() async {
@@ -74,7 +100,7 @@ class FirebaseApi {
     if (snapshot.value != null) {
       final data = Map<dynamic, dynamic>.from(snapshot.value as Map);
       data.forEach((key, value) {
-        final servo = Servo.fromMap(key, value as int);
+        final servo = Servo.fromMap(key, Map<String, dynamic>.from(value));
         servos.add(servo);
       });
     }

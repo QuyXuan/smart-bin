@@ -157,6 +157,8 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
     }
   }
 
+  void listenToNotify() {}
+
   void openRecordDialog() {
     showDialog(
       context: context,
@@ -398,16 +400,16 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
       onTap: () {
         setState(() {
           binItem.state = !binItem.state;
-          FirebaseApi().updateServo(binItem.servoName, binItem.state ? 1 : 0);
-          NotificationHelper.pushNotification(
-            title: binItem.state
-                ? "OPENED YOUR COMPARTMENT!!!"
-                : "CLOSED YOUR COMPARTMENT!!!",
-            body:
-                "Your ${binItem.name} compartment is ${binItem.state ? "closed" : "opened"}",
-            isToggleServo: true,
-          );
         });
+        FirebaseApi().updateServo(binItem.servoName, binItem.state ? 1 : 0);
+        NotificationHelper.pushNotification(
+          title: binItem.state
+              ? "OPENED YOUR COMPARTMENT!!!"
+              : "CLOSED YOUR COMPARTMENT!!!",
+          body:
+              "Your ${binItem.name} compartment is ${binItem.state ? "closed" : "opened"}",
+          isToggleServo: true,
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(
