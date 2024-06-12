@@ -3,7 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  awesome_notifications
+  audioplayers_linux
   file_selector_linux
 )
 
