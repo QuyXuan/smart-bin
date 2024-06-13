@@ -14,12 +14,7 @@ class FirebaseApi {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firebaseMessaging = FirebaseMessaging.instance;
   final _firebaseDatabase = FirebaseDatabase.instance;
-  Map<String, String> servos = {
-    'servo1': 'glass',
-    'servo2': 'recyclable',
-    'servo3': 'danger',
-    'servo4': 'organic',
-  };
+  List<String> compartmentNames = ['recyclable', 'danger', 'organic', 'glass'];
   final player = AudioPlayer();
 
   Future<void> initFunctions() async {
@@ -53,20 +48,20 @@ class FirebaseApi {
   }
 
   void listenFullGarbage() {
-    servos.forEach((key, value) {
+    for (String name in compartmentNames) {
       _firebaseDatabase
-          .ref("servos/$key/is_full")
+          .ref("compartments/$name/is_full")
           .onValue
           .listen((event) async {
         final snapshot = event.snapshot;
-        final int? isFull = snapshot.value as int?;
-        if (isFull == 1) {
-          log("$key-$value");
-          await player.setSource(AssetSource("audios/$value.mp3"));
+        final bool? isFull = snapshot.value as bool?;
+        if (isFull!) {
+          log(name);
+          await player.setSource(AssetSource("audios/$name.mp3"));
           await player.resume();
         }
       });
-    });
+    }
   }
 
   Future initPushNotification() async {
@@ -80,10 +75,13 @@ class FirebaseApi {
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
   }
 
-  void updateServo(String servoName, int state) {
+  void updateServo(String name, bool value) {
     if (_firebaseAuth.currentUser != null) {
       try {
-        _firebaseDatabase.ref("servos").child(servoName).set(state);
+        _firebaseDatabase
+            .ref("compartments")
+            .child(name)
+            .update({"is_open": value});
       } catch (e) {
         log(e.toString());
       }
@@ -92,15 +90,31 @@ class FirebaseApi {
     }
   }
 
-  Future<List<Servo>> getServos() async {
-    final event = await _firebaseDatabase.ref("servos").once();
+  void notifyServo(String name, bool value) {
+    if (_firebaseAuth.currentUser != null) {
+      try {
+        _firebaseDatabase
+            .ref("compartments")
+            .child(name)
+            .update({"is_notified": value});
+      } catch (e) {
+        log(e.toString());
+      }
+    } else {
+      log('User is not authenticated!');
+    }
+  }
+
+  Future<List<Compartment>> getCompartments() async {
+    final event = await _firebaseDatabase.ref("compartments").once();
     final snapshot = event.snapshot;
-    final servos = <Servo>[];
+    final servos = <Compartment>[];
 
     if (snapshot.value != null) {
       final data = Map<dynamic, dynamic>.from(snapshot.value as Map);
       data.forEach((key, value) {
-        final servo = Servo.fromMap(key, Map<String, dynamic>.from(value));
+        final servo =
+            Compartment.fromMap(key, Map<String, dynamic>.from(value));
         servos.add(servo);
       });
     }

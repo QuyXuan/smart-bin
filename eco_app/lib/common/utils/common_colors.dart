@@ -38,7 +38,7 @@ class CommonColors {
   static const Color textBlue = Color(0xFF3B45A7);
 
   static const Color glassColor = Color(0xFF4E6EDD);
-  static const Color recycleColor = Color(0xFF24AD45);
+  static const Color recyclableColor = Color(0xFF24AD45);
   static const Color dangerColor = Color(0xFFD29621);
   static const Color organicColor = Color(0xFF2DCCC6);
 }

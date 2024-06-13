@@ -3,16 +3,14 @@ import 'package:flutter/widgets.dart';
 class BinItem {
   final String id;
   final String name;
-  final String servoName;
-  bool state;
+  bool isOpen;
   final String imageDir;
   final Color color;
 
   BinItem({
     required this.id,
     required this.name,
-    required this.servoName,
-    required this.state,
+    required this.isOpen,
     required this.imageDir,
     required this.color,
   });
@@ -21,8 +19,7 @@ class BinItem {
     return BinItem(
       id: json['id'],
       name: json['name'],
-      servoName: json['servoName'],
-      state: json['state'],
+      isOpen: json['isOpen'],
       imageDir: json['imageDir'],
       color: json['color'],
     );
