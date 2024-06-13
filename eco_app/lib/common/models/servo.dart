@@ -1,14 +1,14 @@
-class Servo {
+class Compartment {
   final String name;
-  final int state;
+  final bool isOpen;
 
-  Servo({
+  Compartment({
     required this.name,
-    required this.state,
+    required this.isOpen,
   });
 
-  factory Servo.fromMap(String name, Map<String, dynamic> value) {
-    final int state = value['state'] ?? 0;
-    return Servo(name: name, state: state);
+  factory Compartment.fromMap(String name, Map<String, dynamic> value) {
+    final bool isOpen = value['is_open'] ?? 0;
+    return Compartment(name: name, isOpen: isOpen);
   }
 }
