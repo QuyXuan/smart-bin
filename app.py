@@ -1,7 +1,5 @@
 from PIL import Image
 import numpy as np
-
-from logger import log_critical, log_info, log_warning, log_error
 from flask import Flask, request
 import json
 import io
@@ -40,63 +38,19 @@ compartment_categories = {
     "plastic": "recyclable",
     "glass": "glass",
     "eggshell": "organic",
-    "dish": "organic",
     "nylon": "organic",
 }
 
-# Khởi tạo model.
 global model
 model = utils.load_model_predict()
-# Token thiết bị
 global device_token
 device_token = None
-# Khởi tạo flask app
 app = Flask(__name__)
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    log_info("Predicting...")
-    data = {"success": False}
-    if request.files.get("image"):
-        # Lấy file ảnh người dùng upload lên
-        image = request.files["image"].read()
-        image_bytes = io.BytesIO(image).read()
-        upload_image(image_bytes)
-        # Convert sang dạng array image
-        image = Image.open(io.BytesIO(image))
-        # resize ảnh
-        image = image.resize((img_height, img_width))
-        # Convert ảnh thành array
-        img_arr = img_to_array(image)
-        # Mở rộng kích thước của array
-        img_bat = np.expand_dims(img_arr, axis=0)
-        # Dự đoán phân phối xác suất
-        predict = model.predict(img_bat)
-        # Tính toán điểm số
-        score = tf.nn.softmax(predict[0])
-        # Lấy lớp có điểm số cao nhất
-        predicted_class = class_names[np.argmax(score)]
-        # Lấy điểm số cao nhất
-        confident = np.max(score) * 100
-        # Gán kết quả vào data
-        data["prediction"] = predicted_class
-        data["compartment_name"] = compartment_categories[predicted_class]
-        data["confident"] = confident
-        data["success"] = True
-        log_info(f"Predicted class: {predicted_class}")
-        set_state_on_esp32(compartment_categories[predicted_class])
-        push_notification(
-            "GARBAGE CLASSIFICATION!!!",
-            f"Predicted class: {predicted_class}!",
-            device_token,
-        )
-    return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
-
-
-@app.route("/test", methods=["POST"])
-def test():
-    log_info("Predicting...")
+    print("Predicting...")
     data = {"success": False}
     if request.files.get("image"):
         image = request.files["image"].read()
@@ -109,34 +63,31 @@ def test():
         img_batch = np.expand_dims(img_array, axis=0)
         predictions = model.predict(img_batch)
         score = tf.nn.softmax(predictions[0])
-        data["test"] = (
-            "Garbage in image is {} with a {:.2f} percent confidence.".format(
-                class_names[np.argmax(score)], 100 * np.max(score)
-            )
+        predicted_class = class_names[np.argmax(score)]
+        confidence = np.max(score) * 100
+        data["prediction"] = predicted_class
+        data["compartment_name"] = compartment_categories[predicted_class]
+        data["confidence"] = confidence
+        data["success"] = True
+        print(f"Predicted class: {predicted_class}")
+        set_state_on_esp32(compartment_categories[predicted_class])
+        push_notification(
+            "GARBAGE CLASSIFICATION!!!",
+            f"Predicted class: {predicted_class}!",
+            device_token,
         )
-        # log_info(f"Predicted class: {predicted_class}")
-        # set_state_on_esp32(compartment_categories[predicted_class])
-        # push_notification(
-        #     "GARBAGE CLASSIFICATION!!!",
-        #     f"Predicted class: {predicted_class}!",
-        #     device_token,
-        # )
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
 
 @app.route("/predict_img", methods=["POST"])
 def predict_img():
-    log_info("Predicting image...")
+    print("Predicting image...")
     data = {"success": False}
-    # Nhận dữ liệu hình ảnh mã hóa base64 từ request
     image_b64 = request.json.get("image")
     if image_b64:
         try:
-            # Giải mã hình ảnh từ base64
             image_data = base64.b64decode(image_b64)
-            # Chuyển hình ảnh giải mã sang dạng array image
             image = Image.open(io.BytesIO(image_data))
-            # Các bước tiếp theo như resize và xử lý hình ảnh không thay đổi
             image = image.resize((img_height, img_width))
             img_arr = img_to_array(image)
             img_bat = np.expand_dims(img_arr, axis=0)
@@ -144,25 +95,23 @@ def predict_img():
             score = tf.nn.softmax(predict[0])
             predicted_class = class_names[np.argmax(score)]
             confident = np.max(score) * 100
-            # Gán kết quả vào data
             data["prediction"] = predicted_class
             data["compartment_name"] = compartment_categories[predicted_class]
             data["confident"] = confident
             data["success"] = True
-            log_info(f"Predicted class: {predicted_class}")
+            print(f"Predicted class: {predicted_class}")
         except Exception as e:
-            # Trả về một lỗi nếu có vấn đề trong quá trình xử lý hình ảnh
             data["error"] = str(e)
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
 
 @app.route("/register_device", methods=["POST"])
 def register_device():
-    log_info("Call register_device")
+    print("Call register_device")
     data = {"success": False}
     token = request.json.get("token")
     if token:
-        log_info(f"Register device with token: {token}")
+        print(f"Register device with token: {token}")
         global device_token
         device_token = token
         data["success"] = True
@@ -171,11 +120,11 @@ def register_device():
 
 @app.route("/notify-full-garbage", methods=["POST"])
 def notify_full_garbage():
-    log_info("Call notify_full_garbage")
+    print("Call notify_full_garbage")
     data = {"success": False}
     compartment_name = request.json.get("compartment_name")
     if compartment_name:
-        log_info(f"Notify full garbage with compartment: {compartment_name}")
+        print(f"Notify full garbage with compartment: {compartment_name}")
         global device_token
         push_notification(
             "GARBAGE IS FULL!!!",
@@ -187,6 +136,5 @@ def notify_full_garbage():
 
 
 if __name__ == "__main__":
-    log_info("Starting server...")
-    # IP = '127.0.0.1'
+    print("Starting server...")
     app.run(host="0.0.0.0", port=8000)
