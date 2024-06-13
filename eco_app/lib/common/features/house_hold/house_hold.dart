@@ -21,13 +21,11 @@ class HouseHoldPage extends ConsumerStatefulWidget {
 }
 
 class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
-  String streamURL = "";
-  bool speechEnabled = false;
-  String wordsSpoken = "";
-  bool isRecord = false;
+  String endpoint = "";
   bool isLive = false;
   late ApiService apiService;
   bool flashState = false;
+  bool addSizedBox = false;
   final TextEditingController textIPStreamController = TextEditingController();
   late List<BinItem> binItems = [
     BinItem(
@@ -105,7 +103,7 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
           okButtonText: "Save",
           onOKButtonPressed: () {
             setState(() {
-              streamURL = textIPStreamController.text;
+              endpoint = textIPStreamController.text;
             });
             Navigator.of(context).pop();
           },
@@ -129,124 +127,183 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
       ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          children: [
+            addSizedBox
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          FirebaseApi().updateEsp32("recyclable");
+                        },
+                        child: const ContentText(
+                          "😘",
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 25),
+                      GestureDetector(
+                        onTap: () {
+                          FirebaseApi().updateEsp32("danger");
+                        },
+                        child: const ContentText(
+                          "😂",
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 25),
+                      GestureDetector(
+                        onTap: () {
+                          FirebaseApi().updateEsp32("organic");
+                        },
+                        child: const ContentText(
+                          "😁",
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 25),
+                      GestureDetector(
+                        onTap: () {
+                          FirebaseApi().updateEsp32("glass");
+                        },
+                        child: const ContentText(
+                          "😎",
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox(height: 0),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const HeadlineText("Camera view"),
-                  GestureDetector(
-                    onTap: () {
-                      openTextFieldDialog();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: CommonColors.rubyBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        FontAwesomeIcons.wifi,
-                        size: 25,
-                        color: CommonColors.darkGreen,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const ContentText("Flash intensity"),
-                  Switch(
-                    value: flashState,
-                    onChanged: (value) {
-                      setState(() {
-                        flashState = value;
-                      });
-                      apiService.dioSetFlash(flashState);
-                    },
-                    activeColor: CommonColors.darkGreen,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isLive = !isLive;
-                  });
-                },
-                child: Container(
-                  height: screenSize.height * 0.4,
-                  width: screenSize.width,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xFFF2F2F2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 1,
-                        offset: const Offset(0, 3),
-                        blurRadius: 3,
-                      ),
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 1,
-                        offset: const Offset(0, -3),
-                        blurRadius: 3,
-                      ),
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 1,
-                        offset: const Offset(-3, 0),
-                        blurRadius: 3,
-                      ),
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 1,
-                        offset: const Offset(3, 0),
-                        blurRadius: 3,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              addSizedBox = !addSizedBox;
+                            });
+                          },
+                          child: const HeadlineText("Camera view")),
+                      GestureDetector(
+                        onTap: () {
+                          openTextFieldDialog();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: CommonColors.rubyBlue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            FontAwesomeIcons.wifi,
+                            size: 25,
+                            color: CommonColors.darkGreen,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: isLive
-                      ? Center(
-                          child: Mjpeg(
-                            isLive: true,
-                            stream: "$streamURL:81/stream",
-                            timeout: const Duration(minutes: 5),
-                            error: (context, error, stack) {
-                              log(error.toString());
-                              return Text(
-                                error.toString(),
-                                style: const TextStyle(color: Colors.red),
-                              );
-                            },
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const ContentText("Flash intensity"),
+                      Switch(
+                        value: flashState,
+                        onChanged: (value) {
+                          setState(() {
+                            flashState = value;
+                          });
+                          apiService.dioSetFlash(flashState, endpoint);
+                        },
+                        activeColor: CommonColors.darkGreen,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isLive = !isLive;
+                      });
+                    },
+                    child: Container(
+                      height: screenSize.height * 0.4,
+                      width: screenSize.width,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: const Color(0xFFF2F2F2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 1,
+                            offset: const Offset(0, 3),
+                            blurRadius: 3,
                           ),
-                        )
-                      : const Icon(
-                          FontAwesomeIcons.videoSlash,
-                          size: 50,
-                          color: CommonColors.darkGreen,
-                        ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const HeadlineText("Monitoring"),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  for (var binItem in binItems) monitorCard(binItem),
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 1,
+                            offset: const Offset(0, -3),
+                            blurRadius: 3,
+                          ),
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 1,
+                            offset: const Offset(-3, 0),
+                            blurRadius: 3,
+                          ),
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 1,
+                            offset: const Offset(3, 0),
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: isLive
+                          ? Center(
+                              child: Mjpeg(
+                                isLive: true,
+                                stream: "http://192.168.$endpoint:81/stream",
+                                timeout: const Duration(minutes: 5),
+                                error: (context, error, stack) {
+                                  log(error.toString());
+                                  return Text(
+                                    error.toString(),
+                                    style: const TextStyle(color: Colors.red),
+                                  );
+                                },
+                              ),
+                            )
+                          : const Icon(
+                              FontAwesomeIcons.videoSlash,
+                              size: 50,
+                              color: CommonColors.darkGreen,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const HeadlineText("Monitoring"),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      for (var binItem in binItems) monitorCard(binItem),
+                    ],
+                  )
                 ],
-              )
-            ],
-          ),
+              ),
+            ),
+            addSizedBox
+                ? const SizedBox(height: 70)
+                : const SizedBox(height: 0),
+          ],
         ),
       ),
     );
@@ -320,7 +377,15 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
             const SizedBox(height: 5),
             GestureDetector(
               onTap: () {
-                FirebaseApi().notifyServo(binItem.name, true);
+                FirebaseApi().notifyServo(
+                  binItem.id == "recyclable"
+                      ? 1
+                      : binItem.id == "danger"
+                          ? 2
+                          : binItem.id == "organic"
+                              ? 3
+                              : 4,
+                );
               },
               child: Container(
                 padding: const EdgeInsets.all(2),

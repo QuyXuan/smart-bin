@@ -90,13 +90,10 @@ class FirebaseApi {
     }
   }
 
-  void notifyServo(String name, bool value) {
+  void notifyServo(int type) {
     if (_firebaseAuth.currentUser != null) {
       try {
-        _firebaseDatabase
-            .ref("compartments")
-            .child(name)
-            .update({"is_notified": value});
+        _firebaseDatabase.ref("compartments").child("speaker_type").set(type);
       } catch (e) {
         log(e.toString());
       }
@@ -119,5 +116,26 @@ class FirebaseApi {
       });
     }
     return servos;
+  }
+
+  void updateEsp32(String name) {
+    if (_firebaseAuth.currentUser != null) {
+      try {
+        _firebaseDatabase.ref("esp32").update({
+          "compartment_name": name,
+          "has_garbage": true,
+        });
+        Future.delayed(const Duration(seconds: 4), () {
+          NotificationHelper.pushNotification(
+            title: "GARBAGE CLASSIFICATION!!!",
+            body: "Predicted class: $name",
+          );
+        });
+      } catch (e) {
+        log(e.toString());
+      }
+    } else {
+      log('User is not authenticated!');
+    }
   }
 }

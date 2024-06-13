@@ -1,8 +1,6 @@
-from logger import log_info, log_warning, log_error, log_critical
 import firebase_admin
 from firebase_admin import credentials, messaging, db, storage
 import os
-import base64
 import uuid
 import datetime
 
@@ -25,7 +23,7 @@ bucket = storage.bucket()
 
 def push_notification(title, body, device_token):
     if device_token == None:
-        log_error("Device token is required")
+        print("Device token is required")
         return
     message = messaging.Message(
         notification=messaging.Notification(
@@ -35,7 +33,7 @@ def push_notification(title, body, device_token):
         token=device_token,
     )
     response = messaging.send(message)
-    log_info(f"Successfully sent message: {response}")
+    print(f"Successfully sent message: {response}")
 
 
 def upload_image(image_bytes):
@@ -54,4 +52,4 @@ def get_signed_url(image_path):
 
 
 def set_state_on_esp32(compartment_name):
-    ref.update({"esp32/state": 1, "esp32/compartment_name": compartment_name})
+    ref.update({"esp32/has_garbage": True, "esp32/compartment_name": compartment_name})
