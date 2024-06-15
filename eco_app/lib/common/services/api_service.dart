@@ -46,10 +46,10 @@ class ApiService {
     }
   }
 
-  Future<void> dioSetFlash(bool flashState, String endpoint) async {
+  Future<void> dioSetFlash(bool flashState, String streamUrl) async {
     try {
       await _dio.get(
-        'http://192.168.$endpoint/control?var=led_intensity&val=${flashState ? 100 : 0}',
+        'http://$streamUrl/control?var=led_intensity&val=${flashState ? 100 : 0}',
       );
     } catch (e) {
       log(e.toString());
