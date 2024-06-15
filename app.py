@@ -41,9 +41,7 @@ compartment_categories = {
     "nylon": "organic",
 }
 
-global model
 model = utils.load_model_predict()
-global device_token
 device_token = None
 app = Flask(__name__)
 
@@ -52,30 +50,34 @@ app = Flask(__name__)
 def predict():
     print("Predicting...")
     data = {"success": False}
-    if request.files.get("image"):
-        image = request.files["image"].read()
-        image_bytes = io.BytesIO(image).read()
-        upload_image(image_bytes)
-        image = Image.open(io.BytesIO(image))
-        image = image.resize((img_height, img_width))
-        img_array = tf.keras.utils.img_to_array(image)
-        img_array = img_array / 255.0
-        img_batch = np.expand_dims(img_array, axis=0)
-        predictions = model.predict(img_batch)
-        score = tf.nn.softmax(predictions[0])
-        predicted_class = class_names[np.argmax(score)]
-        confidence = np.max(score) * 100
-        data["prediction"] = predicted_class
-        data["compartment_name"] = compartment_categories[predicted_class]
-        data["confidence"] = confidence
-        data["success"] = True
-        print(f"Predicted class: {predicted_class}")
-        set_state_on_esp32(compartment_categories[predicted_class])
-        push_notification(
-            "GARBAGE CLASSIFICATION!!!",
-            f"Predicted class: {predicted_class}!",
-            device_token,
-        )
+    try:
+        if request.files.get("image"):
+            image = request.files["image"].read()
+            image_bytes = io.BytesIO(image).read()
+            upload_image(image_bytes)
+            image: Image.Image = Image.open(io.BytesIO(image))
+            image = image.resize((img_height, img_width))
+            img_array = tf.keras.utils.img_to_array(image)
+            img_array = img_array / 255.0
+            img_batch = np.expand_dims(img_array, axis=0)
+            predictions = model.predict(img_batch)
+            score = tf.nn.softmax(predictions[0])
+            predicted_class = class_names[np.argmax(score)]
+            confidence = np.max(score) * 100
+            data["prediction"] = predicted_class
+            data["compartment_name"] = compartment_categories[predicted_class]
+            data["confidence"] = confidence
+            data["success"] = True
+            print(f"Predicted class: {predicted_class}")
+            set_state_on_esp32(compartment_categories[predicted_class])
+            push_notification(
+                "GARBAGE CLASSIFICATION!!!",
+                f"Predicted class: {predicted_class}!",
+                device_token,
+            )
+    except Exception as e:
+        data["error"] = str(e)
+        return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 
 
@@ -114,23 +116,6 @@ def register_device():
         print(f"Register device with token: {token}")
         global device_token
         device_token = token
-        data["success"] = True
-    return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
-
-
-@app.route("/notify-full-garbage", methods=["POST"])
-def notify_full_garbage():
-    print("Call notify_full_garbage")
-    data = {"success": False}
-    compartment_name = request.json.get("compartment_name")
-    if compartment_name:
-        print(f"Notify full garbage with compartment: {compartment_name}")
-        global device_token
-        push_notification(
-            "GARBAGE IS FULL!!!",
-            f"Your {compartment_name} compartment is full of garbage. Please turn off the compartment!",
-            device_token,
-        )
         data["success"] = True
     return json.dumps(data, ensure_ascii=False, cls=utils.NumpyEncoder)
 

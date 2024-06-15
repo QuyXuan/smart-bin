@@ -52,4 +52,4 @@ def get_signed_url(image_path):
 
 
 def set_state_on_esp32(compartment_name):
-    ref.update({"esp32/has_garbage": True, "esp32/compartment_name": compartment_name})
+    ref.child("esp32").child("compartment_name").set(compartment_name)
