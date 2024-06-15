@@ -81,7 +81,8 @@ class FirebaseApi {
         _firebaseDatabase
             .ref("compartments")
             .child(name)
-            .update({"is_open": value});
+            .child("is_open")
+            .set(value);
       } catch (e) {
         log(e.toString());
       }
@@ -93,7 +94,7 @@ class FirebaseApi {
   void notifyServo(int type) {
     if (_firebaseAuth.currentUser != null) {
       try {
-        _firebaseDatabase.ref("compartments").child("speaker_type").set(type);
+        _firebaseDatabase.ref("esp32").child("speaker_type").set(type);
       } catch (e) {
         log(e.toString());
       }
@@ -105,26 +106,23 @@ class FirebaseApi {
   Future<List<Compartment>> getCompartments() async {
     final event = await _firebaseDatabase.ref("compartments").once();
     final snapshot = event.snapshot;
-    final servos = <Compartment>[];
+    final compartments = <Compartment>[];
 
     if (snapshot.value != null) {
       final data = Map<dynamic, dynamic>.from(snapshot.value as Map);
       data.forEach((key, value) {
-        final servo =
+        final compartment =
             Compartment.fromMap(key, Map<String, dynamic>.from(value));
-        servos.add(servo);
+        compartments.add(compartment);
       });
     }
-    return servos;
+    return compartments;
   }
 
   void updateEsp32(String name) {
     if (_firebaseAuth.currentUser != null) {
       try {
-        _firebaseDatabase.ref("esp32").update({
-          "compartment_name": name,
-          "has_garbage": true,
-        });
+        _firebaseDatabase.ref("esp32").child("compartment_name").set(name);
         Future.delayed(const Duration(seconds: 4), () {
           NotificationHelper.pushNotification(
             title: "GARBAGE CLASSIFICATION!!!",

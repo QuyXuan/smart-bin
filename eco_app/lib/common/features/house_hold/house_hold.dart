@@ -21,7 +21,7 @@ class HouseHoldPage extends ConsumerStatefulWidget {
 }
 
 class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
-  String endpoint = "";
+  String streamUrl = "";
   bool isLive = false;
   late ApiService apiService;
   bool flashState = false;
@@ -68,7 +68,7 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
       };
       setState(() {
         for (var binItem in binItems) {
-          binItem.isOpen = compartmentStates[binItem.name] ?? false;
+          binItem.isOpen = compartmentStates[binItem.id] ?? false;
         }
       });
     });
@@ -103,7 +103,7 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
           okButtonText: "Save",
           onOKButtonPressed: () {
             setState(() {
-              endpoint = textIPStreamController.text;
+              streamUrl = textIPStreamController.text;
             });
             Navigator.of(context).pop();
           },
@@ -220,7 +220,7 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
                           setState(() {
                             flashState = value;
                           });
-                          apiService.dioSetFlash(flashState, endpoint);
+                          apiService.dioSetFlash(flashState, streamUrl);
                         },
                         activeColor: CommonColors.darkGreen,
                       ),
@@ -270,7 +270,7 @@ class _HouseHoldPageState extends ConsumerState<HouseHoldPage> {
                           ? Center(
                               child: Mjpeg(
                                 isLive: true,
-                                stream: "http://192.168.$endpoint:81/stream",
+                                stream: "http://$streamUrl:81/stream",
                                 timeout: const Duration(minutes: 5),
                                 error: (context, error, stack) {
                                   log(error.toString());
